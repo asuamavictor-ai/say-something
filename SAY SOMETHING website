@@ -1,0 +1,53 @@
+<section id="ai-chat">
+  <h2>Talk to AI Support</h2>
+  <div class="chat-box" id="aiMessages"></div>
+  <div class="input-box">
+    <input type="text" id="aiInput" placeholder="Share your thoughts with AI...">
+    <button onclick="sendAIMessage()">Send</button>
+  </div>
+</section>
+<script src="chatbot.js"></script>
+const aiMessagesBox = document.getElementById('aiMessages');
+const aiInput = document.getElementById('aiInput');
+
+// Your OpenAI API key (store safely in Netlify environment variables)
+const OPENAI_API_KEY = 'YOUR_OPENAI_API_KEY';
+
+async function sendAIMessage() {
+    const userMessage = aiInput.value.trim();
+    if (!userMessage) return;
+
+    // Display user's message
+    const userMsgElement = document.createElement('p');
+    userMsgElement.textContent = "You: " + userMessage;
+    aiMessagesBox.appendChild(userMsgElement);
+    aiMessagesBox.scrollTop = aiMessagesBox.scrollHeight;
+
+    aiInput.value = '';
+
+    // Call OpenAI API
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+            model: "gpt-5-mini",
+            messages: [
+                {role: "system", content: "You are a friendly, empathetic mental health and spiritual support assistant."},
+                {role: "user", content: userMessage}
+            ],
+            max_tokens: 200
+        })
+    });
+
+    const data = await response.json();
+    const aiReply = data.choices[0].message.content;
+
+    // Display AI reply
+    const aiMsgElement = document.createElement('p');
+    aiMsgElement.textContent = "AI: " + aiReply;
+    aiMessagesBox.appendChild(aiMsgElement);
+    aiMessagesBox.scrollTop = aiMessagesBox.scrollHeight;
+}
